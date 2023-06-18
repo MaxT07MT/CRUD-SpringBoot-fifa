@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+
+<h2>League Table</h2>
+
+<table id="leagueList">
+
+</table>
+
+<form action="#">
+    <input id="league_name" placeholder="League name">
+    <input id="league_continent" placeholder="League continent">
+    <input id="league_country" placeholder="League country">
+    <button onclick="createLeague()">Create league</button>
+</form>
+
+<input id="search_field">
+<button onclick="searchByName()">Search by Name</button>
+<script>
+    function searchByName() {
+        var name = document.getElementById("search_field").value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var league = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>League id</th>\n' +
+                    '        <th>League name</th>\n' +
+                    '        <th>League continent</th>\n' +
+                    '        <th>League country</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                html = html + '<tr><td>' + league.id + '</td>\n' +
+                    '        <td>' + league.name + '</td>\n' +
+                    '        <td>' + league.continent + '</td>\n' +
+                    '        <td>' + league.country + '</td>' +
+                    '        <td><button onclick="deleteLeague(' + league.id + ')">Delete</button></td></tr>';
+                document.getElementById("leagueList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/league/findByName?name=" + name, true);
+        xhttp.send();
+    }
+
+    function deleteLeague(leagueId) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("DELETE", "http://localhost:8080/league/delete/" + leagueId, true);
+        xhttp.send();
+    }
+
+    function createLeague() {
+        var leagueName = document.getElementById("league_name").value;
+        var leagueContinent = document.getElementById("league_continent").value;
+        var leagueCountry = document.getElementById("league_country").value;
+
+        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+        xmlhttp.open("POST", "http://localhost:8080/league/save");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({name: leagueName, continent: leagueContinent, country: leagueCountry}));
+
+        loadLeague();
+    }
+
+    function loadLeague() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var league = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>League id</th>\n' +
+                    '        <th>League name</th>\n' +
+                    '        <th>League continent</th>\n' +
+                    '        <th>League country</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                for (var i = 0; i < league.length; i++) {
+                    var league = league[i];
+                    console.log(league);
+                    html = html + '<tr><td>' + league.id + '</td>\n' +
+                        '        <td>' + league.name + '</td>\n' +
+                        '        <td>' + league.continent + '</td>\n' +
+                        '        <td>' + league.country + '</td>' +
+                        '        <td><button onclick="deleteLeague(' + league.id + ')">Delete</button></td></tr>';
+
+                }
+                document.getElementById("leagueList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/league/findAll", true);
+        xhttp.send();
+    }
+
+    loadLeague();
+</script>
+
+<a href="/templates/second.html">Second</a>
+</body>
+</html>
